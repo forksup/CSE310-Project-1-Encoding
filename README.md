@@ -9,6 +9,8 @@ More info can be found in Report/Experimentation Report.pdf
 
 Project definition and information can be found in Report/p1.pdf
 
+Also a test input file was encoded, then decoded again and the results are in the Report folder. 
+
 Usage: 
 
 make encode

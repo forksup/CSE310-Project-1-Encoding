@@ -1,8 +1,5 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <cmath>
-#include <sstream>
 
 using namespace std;
 
@@ -13,7 +10,7 @@ bool sort1 = true;
 int originalIndex = -1;
 
 // Insertion sort1 vector implementation passed by reference to save memory
-void insertionsort(vector < string > & arr, int n) {
+void insertionsort(string *arr, int n) {
     string key;
     int i, j;
     for (i = 1; i <= n; i++) {
@@ -27,13 +24,14 @@ void insertionsort(vector < string > & arr, int n) {
     }
 }
 
-void merge(vector < string > &arr, int l, int m, int r) {
+void merge(string *arr, int l, int m, int r) {
     int i, j, k;
+
     int n1 = m - l + 1;
     int n2 = r - m;
 
-    vector<string> L(n1,"");
-    vector<string> R(n2,"");
+    auto *L = new string[n1];
+    auto *R = new string[n2];
 
     for (i = 0; i < n1; i++) {
         L[i] = arr[l + i];
@@ -76,7 +74,7 @@ void merge(vector < string > &arr, int l, int m, int r) {
     }
 }
 
-void mergesort(vector < string > & arr, int l, int r) {
+void mergesort(string *arr, int l, int r) {
     if (l < r) {
         int mid = (l + r) / 2;
         mergesort(arr, l, mid);
@@ -85,15 +83,13 @@ void mergesort(vector < string > & arr, int l, int r) {
     }
 }
 
-void decrypt(string input) {
+void decrypt(const string input) {
     //Index used to distinguish between index and cluster lines. Set to -1 after decoding of cluster is complete
     if (originalIndex == -1) {
-        originalIndex = stoi(input);
+        originalIndex = std::stoi(input);
         return;
     }
     string line = input;
-    vector < string > last;
-    vector < string > first;
 
     //If statement to capture empty spaces
     if (line == " " && originalIndex == 0) {
@@ -103,8 +99,31 @@ void decrypt(string input) {
     }
 
     int distance = 0;
+    int lastCount = 0;
+    
+    string count;
 
-    for (int i = 0; i < line.length(); i = i + 4) {
+    
+    
+    for (int i = 0; i < line.length(); i = i + 4,distance = 0) {
+        //Check to see if count is double digits
+        string count;
+        count = line[i + distance];
+
+        while (line[i + 1 + distance] != ' ') {
+            count += line[i + distance];
+        }
+
+        for (int j = stoi(count); j > 0; j--) {
+            lastCount++;
+        }
+    }
+
+    auto *last = new string[lastCount];
+    auto *first = new string[lastCount];
+
+    distance = 0;
+    for (int i = 0,index = 0 ; i < line.length(); i = i + 4) {
         //Check to see if count is double digits
         string count;
 
@@ -117,52 +136,69 @@ void decrypt(string input) {
 
         for (int j = stoi(count); j > 0; j--) {
             string s(1, line[i + 2 + distance]);
-            last.push_back(s);
+            last[index] = s;
+            index++;
         }
     }
 
     //Below sort1 the first last characters
-    first = last;
-    (sort1) ? (insertionsort(first, first.size() - 1)) : (mergesort(first, 0, first.size() - 1));
+    for(int i = 0; i < lastCount;i++) {
+        first[i] = last[i];
+    }
+      
+    (sort1) ? (insertionsort(first, lastCount - 1)) : (mergesort(first, 0, lastCount - 1));
 
-    vector < int > next(first.size(), -1);
+    int *next = new int[lastCount];
 
+    for(int i = 0; i < lastCount; i++) {
+        next[i] = -1;
+    }
+    
     string original;
-    for (int j = 0; j < first.size() - 1; j++) {
+    for (int j = 0; j < lastCount - 1; j++) {
         if (original == first[j]) {
             continue;
         }
         original = first[j];
-        vector < int > indexes;
 
+        int count = 0;
         //Find the indexes of characters ending with that letter
-        for (int p = 0; p < first.size(); p++) {
+        for (int p = 0; p < lastCount; p++) {
             if (last[p] == original) {
-                indexes.push_back(p);
+                count++;
             }
         }
 
-        if (indexes.size() < 2) {
+        int *indexes = new int[count];
+
+        for (int p = 0, index = 0; p < lastCount; p++) {
+            if (last[p] == original) {
+                indexes[index] = p;
+                index++;
+            }
+        }
+
+        if (count < 2) {
             continue;
         }
 
         //Loop through last array and assign the next values to those with matching first letters
-        for (int l = 0; l < last.size() && indexes.size() > 0; l++) {
+        for (int l = 0,index = 0; l < lastCount && count > 0; l++) {
             if (first[l] == original) {
-                next[l] = indexes[0];
-                indexes.erase(indexes.begin());
+                next[l] = indexes[index];
+                index++;
             }
         }
     }
 
     //At this point all the matching letters have been assigned.
     //Now apply next to the rest of the characters
-    for (int i = 0; i < first.size(); i++) {
+    for (int i = 0; i < lastCount; i++) {
 
         //Make sure the next value isn't already assigned
         if (next[i] == -1) {
             //Loop through first letters to find next
-            for (int j = 0; j < first.size(); j++) {
+            for (int j = 0; j < lastCount; j++) {
                 if (last[j] == first[i]) {
                     next[i] = j;
                     break;
@@ -200,6 +236,5 @@ int main(int argc, char * argv[]) {
     }
 
     for (string input; getline(cin, input); decrypt(input)) {}
-
     return 0;
 }

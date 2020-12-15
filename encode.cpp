@@ -1,7 +1,5 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <cmath>
 #include <sstream>
 
 using namespace std;
@@ -14,6 +12,8 @@ bool sort1 = true;
 
 //Declare this globally
 int originalIndex = -1;
+
+int newFunction();
 
 //Function to perform a left shift on a string
 string leftShift(string InputWord) {
@@ -28,7 +28,7 @@ string leftShift(string InputWord) {
 }
 
 // Insertion sort1 vector implementation passed by reference to save memory
-void insertionsort(vector < string > & arr, int n) {
+void insertionsort(string *arr, int n) {
     string key;
     int i, j;
     for (i = 1; i <= n; i++) {
@@ -42,13 +42,14 @@ void insertionsort(vector < string > & arr, int n) {
     }
 }
 
-void merge(vector < string > &arr, int l, int m, int r) {
+void merge(string *arr, int l, int m, int r) {
     int i, j, k;
     int n1 = m - l + 1;
     int n2 = r - m;
 
-    vector<string> L(n1,"");
-    vector<string> R(n2,"");
+
+    string *L = new string[n1];
+    string *R = new string[n2];
 
     for (i = 0; i < n1; i++) {
         L[i] = arr[l + i];
@@ -91,7 +92,7 @@ void merge(vector < string > &arr, int l, int m, int r) {
     }
 }
 
-void mergesort(vector < string > & arr, int l, int r) {
+void mergesort(string *arr, int l, int r) {
     if (l < r) {
         int mid = (l + r) / 2;
         mergesort(arr, l, mid);
@@ -101,20 +102,24 @@ void mergesort(vector < string > & arr, int l, int r) {
 }
 
 int encrypt(string input) {
-
     int length = input.length();
+    //Declare an array to hold each cyclic shift
+    string* variations = new string[length];
+
     int clustercount = 1;
 
-    //Declare an array to hold each cyclic shift
-    std::vector < string > variations;
-
+	//For empty lines
+	if(input.empty()) {
+		cout << endl;
+		return 0;
+	}
+    
     //Add the original string to the list
-    variations.push_back(input);
+    variations[0] = input;
 
     //Loop through variations array filling it with each leftshift
-    for (int i = 1;
-         (unsigned) i < input.size(); i++) {
-        variations.push_back(leftShift(variations[i - 1]));
+    for (int i = 1; (unsigned) i < input.size(); i++) {
+        variations[i] = (leftShift(variations[i - 1]));
     }
 
     //Decide which sort1 to perform
@@ -142,7 +147,7 @@ int encrypt(string input) {
                 amount++;
             } else {
                 //Otherwise reset amount count and add the cluster information to the result string
-                result += std::to_string(amount) + " " + variations[i][input.size() - 1] + " ";
+                result += to_string(amount) + " " + variations[i][input.size() - 1] + " ";
                 amount = 1;
                 if (TESTING) {
                     clustercount++;
@@ -164,6 +169,7 @@ int encrypt(string input) {
     }
     return 0;
 }
+
 
 int main(int argc, char * argv[]) {
     if (argc > 1) {
